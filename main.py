@@ -31,7 +31,7 @@ if __name__ == "__main__":
     rate = "2.1"
 
     net = nnet(netLoc)
-    print(net.nodesIn)
-    print(net.nodesH)
-    print(net.nodesOut)
+    for size in net.layerSize:
+        print(size)
+
     runNet()

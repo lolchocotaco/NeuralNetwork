@@ -21,9 +21,6 @@ class nnet:
             for layerNum, val in enumerate(fLine):
                 self.layerSize[layerNum] = int(fLine[layerNum])
                 self.layers[layerNum] = [node(y) for y in range(self.layerSize[layerNum])]
-            # self.nodesIn = int(fLine[0])
-            # self.nodesH = int(fLine[1])
-            # self.nodesOut = int(fLine[2])
 
             for layer in range(1,3):
                 for nodeNum in range(len(self.layers[layer])):
@@ -33,6 +30,8 @@ class nnet:
                     self.layers[layer][nodeNum].weights = weights
                     self.layers[layer][nodeNum].bias = bias
 
-
+    def writeFile(self, fileName):
+        with open(fileName,'wr') as f:
+            f.write(" ".join(map(str,self.layerSize)))
 
 

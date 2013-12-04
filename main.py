@@ -25,13 +25,15 @@ if __name__ == "__main__":
     # rate = float(raw_input("Rate: "))
 
     netLoc = "res/sample.NNWDBC.init"
-    trainLoc = "res/wdbc.train"
+    trainLoc = "res/wdbc.mini_train"
     outName = "res/test.out"
-    epoch = "10"
-    rate = "2.1"
+    epoch = 1
+    rate = 0.1
 
     net = nnet(netLoc)
-    for size in net.layerSize:
-        print(size)
+
+    net.train(trainLoc, epoch, rate)
+    net.writeFile(outName)
+
 
     runNet()

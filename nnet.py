@@ -1,6 +1,14 @@
 import math
-from node import node
 
+class node:
+    def __init__(self, nodeNum):
+        self.nodeNum = nodeNum
+        self.biasWeight = 1
+        self.inputBias = -1
+        self.weights = []
+        self.inval = 0
+        self.activation = -1
+        self.delta = 0
 
 class nnet:
     # Input : Index 0
@@ -47,7 +55,7 @@ class nnet:
                 #For each training case
                 for line in f:
                     trainingRow = map(float, line.split(" "))
-                    truth = int(trainingRow.pop(len(trainingRow)-1))
+                    truth = int(trainingRow.pop(len(trainingRow)-1)) # Won't work with more than one output node
 
                     #Initialize input Layer
                     for node in self.layers[0]:
@@ -61,7 +69,7 @@ class nnet:
                             node.activation = self.sig(node.inval)
 
                      #Initialize for output later
-                    for node in self.layers[2]:
+                    for node in self.layers[-1]:
                         node.delta = self.dSig(node.inval)*(truth - node.activation)
 
                     # Back propogation
@@ -80,9 +88,35 @@ class nnet:
 
             currEpoch +=1
 
-    def fowardProp(self, fileName, epoch, alpha):
+    def test(self, fileName,outName):
+        print("Writing to {0}").format(outName)
+        result = []
+        truthVec = []
+        with open(fileName,"r")as r:
+                fLine = (r.readline().strip()).split(" ")
+                for line in r:
+                    trainingRow = map(float, line.split(" "))
+                    truth = int(trainingRow.pop(len(trainingRow)-1))
+                    truthVec.append(truth)
 
+                    #Initialize input Layer
+                    for node in self.layers[0]:
+                        node.activation = trainingRow[node.nodeNum]
 
+                    #Propogate forward
+                    for layer in range(1,3):
+                        for node in self.layers[layer]:
+                            activations = [prevNode.activation for prevNode in self.layers[layer-1]]
+                            node.inval = sum([a*b for a, b in zip(node.weights, activations)]) + node.inputBias*node.biasWeight
+                            node.activation = self.sig(node.inval)
+
+                    for nodes in self.layers[2]:
+                        if node.activation >= 0.5:
+                            result.append(1)
+                        else:
+                            result.append(0)
+        print(sum(result))
+        print(sum(truthVec))
 
 
     def sig(self,val):

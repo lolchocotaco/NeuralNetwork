@@ -24,16 +24,23 @@ if __name__ == "__main__":
 
     # rate = float(raw_input("Rate: "))
 
-    netLoc = "res/sample.NNWDBC.init"
-    trainLoc = "res/wdbc.mini_train"
-    outName = "res/test.out"
-    epoch = 1
-    rate = 0.1
+    if raw_input("Test or Train? ").lower() == "train":
+        netLoc = "res/sample.NNWDBC.init"
+        trainLoc = "res/wdbc.mini_train"
+        outName = "res/train.out"
+        epoch = 1
+        rate = 0.1
 
-    net = nnet(netLoc)
+        net = nnet(netLoc)
+        net.train(trainLoc, epoch, rate)
+        net.writeFile(outName)
+    else:
+        netLoc = "res/sample.NNWDBC.1.100.trained"
+        testLoc = "res/wdbc.test"
+        outName = "test.out"
 
-    net.train(trainLoc, epoch, rate)
-    net.writeFile(outName)
+        net = nnet(netLoc)
+        net.test(testLoc,outName)
 
 
     runNet()

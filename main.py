@@ -26,10 +26,10 @@ if __name__ == "__main__":
 
     if raw_input("Test or Train? ").lower() == "train":
         netLoc = "res/sample.NNWDBC.init"
-        trainLoc = "res/wdbc.mini_train"
+        trainLoc = "res/wdbc.train"
         outName = "res/train.out"
-        epoch = 1
-        rate = 1
+        epoch = 100
+        rate = 0.1
 
         net = nnet(netLoc)
         net.train(trainLoc, epoch, rate)

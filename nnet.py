@@ -54,7 +54,6 @@ class nnet:
         while currEpoch < epoch:
             with open(fileName, "r") as f:
                 fLine = (f.readline().strip()).split(" ")
-                print(fLine)
 
                 #For each training case
                 for line in f:
@@ -85,7 +84,6 @@ class nnet:
 
                     # For all weights
                     for layer in range(1,3):
-                        print(layer)
                         for node in self.layers[layer]:
                             actDelAlpha = [alpha * prevNode.activation * node.delta for prevNode in self.layers[layer-1]]
                             node.biasWeight += alpha*node.inputBias*node.delta

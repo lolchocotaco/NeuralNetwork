@@ -73,23 +73,24 @@ class nnet:
                         node.delta = self.dSig(node.inval)*(truths[node.nodeNum] - node.activation)
 
                     # Back propogation
-                    for node in self.layers[1]:
-                        deltas = [nextNode.delta for nextNode in self.layers[2]]
-                        weights = [nextNode.weights[node.nodeNum] for nextNode in self.layers[2]]
-                        node.delta = self.dSig(node.inval) * sum([a*b for a, b in zip(deltas, weights)])
+                    for layer in range(1, 2):
+                        for node in self.layers[layer]:
+                            deltas = [nextNode.delta for nextNode in self.layers[layer+1]]
+                            weights = [nextNode.weights[node.nodeNum] for nextNode in self.layers[layer+1]]
+                            node.delta = self.dSig(node.inval) * sum([a*b for a, b in zip(deltas, weights)])
 
                     # For all weights
                     for layer in range(1,3):
                         for node in self.layers[layer]:
                             actDelAlpha = [alpha * prevNode.activation * node.delta for prevNode in self.layers[layer-1]]
                             node.biasWeight += alpha*node.inputBias*node.delta
-                            node.weights = [a+b for a,b in zip(node.weights, actDelAlpha)]
+                            node.weights = [a+b for a, b in zip(node.weights, actDelAlpha)]
 
 
             currEpoch +=1
 
     def test(self, fileName,outName):
-        print("Writing to {0}").format(outName)
+        print("Writing to {0}".format(outName))
         result = []
         truthVec = []
         with open(fileName,"r")as r:
@@ -97,7 +98,7 @@ class nnet:
                 for line in r:
                     trainingRow = map(float, line.split(" "))
                     truths = [int(trainingRow.pop(len(trainingRow)-1)) for node in self.layers[-1]]
-                    print(truths)
+                    # print(truths)
                     # truth = int(trainingRow.pop(len(trainingRow)-1))
                     truthVec.append(truths)
 
@@ -112,13 +113,57 @@ class nnet:
                             node.inval = sum([a*b for a, b in zip(node.weights, activations)]) + node.inputBias*node.biasWeight
                             node.activation = self.sig(node.inval)
 
+                    # create vector of node classification results
                     for nodes in self.layers[2]:
+                        testRes = []
                         if node.activation >= 0.5:
-                            result.append(1)
+                            testRes.append(1)
                         else:
-                            result.append(0)
-        print(sum(result))
-        print(truthVec)
+                            testRes.append(0)
+
+                    result.append(testRes) # append the result from each test
+
+        # Testing is now done.  write results
+        with open(outName, "w") as w:
+            A, B, C, D = 0, 0, 0, 0
+            avgAcc, avgPre, avgRec, avgF1 = 0.0, 0.0, 0.0, 0.0
+            for node in self.layers[-1]:
+                nodeTruth = [truth[node.nodeNum] for truth in truthVec]
+                nodeGuess = [res[node.nodeNum] for res in result]
+                truthAndGuess = zip(nodeGuess, nodeTruth)
+                a = sum([x & y for x, y in truthAndGuess])
+                A += a
+                b = sum([x & ~y for x, y in truthAndGuess])
+                B += b
+                c = sum([~x & y for x, y in truthAndGuess])
+                C += c
+                d = sum([(~x & ~y) + 2 for x, y in truthAndGuess])
+                D += d
+
+                acc = (a + d)/float((a + b + c + d))
+                avgAcc += acc
+                pre = a/float((a + b))
+                avgPre += pre
+                rec = a/float((a + c))
+                avgRec += rec
+                f1  = (2*pre*rec)/float((pre + rec))
+                avgF1  += f1
+                w.write("{0} {1} {2} {3} {4} {5} {6} {7}\n".format(a, b, c, d, round(acc, 3), round(pre, 3), round(rec, 3), round(f1,3) ))
+
+            # Microaveraging
+            acc = (A + D)/float((A + B + C + D))
+            pre = A/float((A + B))
+            rec = A/float((A + C))
+            f1  = (2*pre*rec)/(pre + rec)
+            w.write("{0} {1} {2} {3}\n".format(round(acc, 3), round(pre, 3), round(rec, 3), round(f1, 3) ))
+
+            #Macroaveraging:
+            avgAcc /= len(self.layers[-1])
+            avgPre /= len(self.layers[-1])
+            avgRec /= len(self.layers[-1])
+            avgF1  = (2*avgPre*avgRec)/(avgPre+ avgRec)
+            w.write("{0} {1} {2} {3}\n".format(round(avgAcc,3), round(avgPre, 3), round(avgRec, 3), round(avgF1, 3) ))
+
 
 
     def sig(self,val):

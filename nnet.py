@@ -46,10 +46,11 @@ class nnet:
                 for node in self.layers[layer]:
                     weightVec = [node.biasWeight]
                     weightVec.extend(node.weights)
-                    f.write(" ".join(map(str, [round(x, 3) for x in weightVec]))+ "\n")
+                    f.write(" ".join([format(val,'.3f') for val in weightVec])+ "\n")
 
     def train(self, fileName, epoch, alpha):
-        print("Reading from to '{0}'".format(fileName))
+        print("=====BEGIN TRAINING======")
+        print("Reading from '{0}'".format(fileName))
         currEpoch = 0
         while currEpoch < epoch:
             with open(fileName, "r") as f:
@@ -59,7 +60,7 @@ class nnet:
                 for line in f:
                     trainingRow = map(float, line.split(" "))
                     truths = [int(trainingRow.pop(len(trainingRow)-1)) for node in self.layers[-1]]
-
+                    truths.reverse()
                     #Initialize input Layer
                     for node in self.layers[0]:
                         node.activation = trainingRow[node.nodeNum]
@@ -93,6 +94,7 @@ class nnet:
             currEpoch += 1
 
     def test(self, fileName,outName):
+        print("=====BEGIN TESTING======")
         print("Writing to {0}".format(outName))
         result = []
         truthVec = []
@@ -101,6 +103,8 @@ class nnet:
                 for line in r:
                     trainingRow = map(float, line.split(" "))
                     truths = [int(trainingRow.pop(len(trainingRow)-1)) for node in self.layers[-1]]
+                    truths.reverse()
+
                     # print(truths)
                     # truth = int(trainingRow.pop(len(trainingRow)-1))
                     truthVec.append(truths)
@@ -117,13 +121,12 @@ class nnet:
                             node.activation = self.sig(node.inval)
 
                     # create vector of node classification results
-                    for nodes in self.layers[2]:
-                        testRes = []
+                    testRes = []
+                    for node in self.layers[-1]:
                         if node.activation >= 0.5:
                             testRes.append(1)
                         else:
                             testRes.append(0)
-
                     result.append(testRes) # append the result from each test
 
         # Testing is now done.  write results
@@ -153,21 +156,21 @@ class nnet:
                 f1  = (2*pre*rec)/float((pre + rec))
                 avgF1  += f1
                 w.write("{0} {1} {2} {3} {4} {5} {6} {7}\n"
-                        .format(a, b, c, d, round(acc, 3), round(pre, 3), round(rec, 3), round(f1, 3) ))
+                        .format(a, b, c, d, format(acc, '.3f'), format(pre, '.3f'), format(rec, '.3f'), format(f1, '.3f') ))
 
             # Microaveraging
             acc = (A + D)/float((A + B + C + D))
             pre = A/float((A + B))
             rec = A/float((A + C))
             f1  = (2*pre*rec)/(pre + rec)
-            w.write("{0} {1} {2} {3}\n".format(round(acc, 3), round(pre, 3), round(rec, 3), round(f1, 3) ))
+            w.write("{0} {1} {2} {3}\n".format(format(acc, '.3f'), format(pre, '.3f'), format(rec, '.3f'), format(f1, '.3f') ))
 
             #Macroaveraging:
             avgAcc /= len(self.layers[-1])
             avgPre /= len(self.layers[-1])
             avgRec /= len(self.layers[-1])
             avgF1  = (2*avgPre*avgRec)/(avgPre+ avgRec)
-            w.write("{0} {1} {2} {3}\n".format(round(avgAcc,3), round(avgPre, 3), round(avgRec, 3), round(avgF1, 3) ))
+            w.write("{0} {1} {2} {3}\n".format(format(avgAcc,'.3f'), format(avgPre, '.3f'), format(avgRec, '.3f'), format(avgF1, '.3f') ))
 
 
 

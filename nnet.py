@@ -34,18 +34,22 @@ class nnet:
             for layer in range(1,3):
                 for nodeNum in range(len(self.layers[layer])):
                     line = f.readline()
-                    weights = map(float,line.split(" "))
+                    weights = map(float, line.split(" "))
                     self.layers[layer][nodeNum].biasWeight = weights.pop(0)
                     self.layers[layer][nodeNum].weights = weights
 
     def writeFile(self, fileName):
+        print("Writing to '{0}'".format(fileName))
         with open(fileName,'wr') as f:
             f.write(" ".join(map(str,  self.layerSize)) + "\n")
             for layer in range(1, 3):
                 for node in self.layers[layer]:
-                    f.write(" ".join(map(str,[round(x, 3) for x in node.weights]))+ "\n")
+                    weightVec = [node.biasWeight]
+                    weightVec.extend(node.weights)
+                    f.write(" ".join(map(str, [round(x, 3) for x in weightVec]))+ "\n")
 
     def train(self, fileName, epoch, alpha):
+        print("Reading from to '{0}'".format(fileName))
         currEpoch = 0
         while currEpoch < epoch:
             with open(fileName, "r") as f:
@@ -81,13 +85,14 @@ class nnet:
 
                     # For all weights
                     for layer in range(1,3):
+                        print(layer)
                         for node in self.layers[layer]:
                             actDelAlpha = [alpha * prevNode.activation * node.delta for prevNode in self.layers[layer-1]]
                             node.biasWeight += alpha*node.inputBias*node.delta
-                            node.weights = [a+b for a, b in zip(node.weights, actDelAlpha)]
+                            pastWeights = node.weights
+                            node.weights = [a+b for a, b in zip(pastWeights, actDelAlpha)]
 
-
-            currEpoch +=1
+            currEpoch += 1
 
     def test(self, fileName,outName):
         print("Writing to {0}".format(outName))
@@ -131,6 +136,7 @@ class nnet:
                 nodeTruth = [truth[node.nodeNum] for truth in truthVec]
                 nodeGuess = [res[node.nodeNum] for res in result]
                 truthAndGuess = zip(nodeGuess, nodeTruth)
+                # Getting confusion matrix elements
                 a = sum([x & y for x, y in truthAndGuess])
                 A += a
                 b = sum([x & ~y for x, y in truthAndGuess])
@@ -148,7 +154,8 @@ class nnet:
                 avgRec += rec
                 f1  = (2*pre*rec)/float((pre + rec))
                 avgF1  += f1
-                w.write("{0} {1} {2} {3} {4} {5} {6} {7}\n".format(a, b, c, d, round(acc, 3), round(pre, 3), round(rec, 3), round(f1,3) ))
+                w.write("{0} {1} {2} {3} {4} {5} {6} {7}\n"
+                        .format(a, b, c, d, round(acc, 3), round(pre, 3), round(rec, 3), round(f1, 3) ))
 
             # Microaveraging
             acc = (A + D)/float((A + B + C + D))

@@ -29,7 +29,7 @@ if __name__ == "__main__":
         trainLoc = "res/wdbc.mini_train"
         outName = "res/train.out"
         epoch = 1
-        rate = 0.1
+        rate = 1
 
         net = nnet(netLoc)
         net.train(trainLoc, epoch, rate)
@@ -41,6 +41,3 @@ if __name__ == "__main__":
 
         net = nnet(netLoc)
         net.test(testLoc,outName)
-
-
-    runNet()

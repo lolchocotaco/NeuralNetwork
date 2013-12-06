@@ -25,6 +25,7 @@ class nnet:
         self.loadFile()
 
     def loadFile(self):
+        print("Loading net from file {0}".format(self.fileName))
         with open(self.fileName, 'r') as f:
             fLine = (f.readline()).split(" ")
             for layerNum, val in enumerate(fLine):
@@ -59,10 +60,12 @@ class nnet:
                 #For each training case
                 for line in f:
                     trainingRow = map(float, line.split(" "))
+                    # print(trainingRow)
                     truths = [int(trainingRow.pop(len(trainingRow)-1)) for node in self.layers[-1]]
                     truths.reverse()
                     #Initialize input Layer
                     for node in self.layers[0]:
+                        # print(node.nodeNum)
                         node.activation = trainingRow[node.nodeNum]
 
                     #Propogate forward
@@ -92,9 +95,10 @@ class nnet:
                             node.weights = [a+b for a, b in zip(pastWeights, actDelAlpha)]
 
             currEpoch += 1
-
+        print("=====DONE TRAINING======")
     def test(self, fileName,outName):
         print("=====BEGIN TESTING======")
+
         print("Writing to {0}".format(outName))
         result = []
         truthVec = []
@@ -102,11 +106,10 @@ class nnet:
                 fLine = (r.readline().strip()).split(" ")
                 for line in r:
                     trainingRow = map(float, line.split(" "))
+
+                    # Separate targets from weights
                     truths = [int(trainingRow.pop(len(trainingRow)-1)) for node in self.layers[-1]]
                     truths.reverse()
-
-                    # print(truths)
-                    # truth = int(trainingRow.pop(len(trainingRow)-1))
                     truthVec.append(truths)
 
                     #Initialize input Layer
@@ -120,7 +123,7 @@ class nnet:
                             node.inval = sum([a*b for a, b in zip(node.weights, activations)]) + node.inputBias*node.biasWeight
                             node.activation = self.sig(node.inval)
 
-                    # create vector of node classification results
+                    # create guess vector
                     testRes = []
                     for node in self.layers[-1]:
                         if node.activation >= 0.5:
@@ -129,7 +132,7 @@ class nnet:
                             testRes.append(0)
                     result.append(testRes) # append the result from each test
 
-        # Testing is now done.  write results
+        # Calculate metrics from results
         with open(outName, "w") as w:
             A, B, C, D = 0, 0, 0, 0
             avgAcc, avgPre, avgRec, avgF1 = 0.0, 0.0, 0.0, 0.0
@@ -137,6 +140,7 @@ class nnet:
                 nodeTruth = [truth[node.nodeNum] for truth in truthVec]
                 nodeGuess = [res[node.nodeNum] for res in result]
                 truthAndGuess = zip(nodeGuess, nodeTruth)
+
                 # Getting confusion matrix elements
                 a = sum([x & y for x, y in truthAndGuess])
                 A += a
@@ -171,9 +175,7 @@ class nnet:
             avgRec /= len(self.layers[-1])
             avgF1  = (2*avgPre*avgRec)/(avgPre+ avgRec)
             w.write("{0} {1} {2} {3}\n".format(format(avgAcc,'.3f'), format(avgPre, '.3f'), format(avgRec, '.3f'), format(avgF1, '.3f') ))
-
-
-
+        print("=====DONE TRAINING======")
     def sig(self,val):
         return 1/(1+math.e**(-val))
 

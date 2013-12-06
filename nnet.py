@@ -55,7 +55,7 @@ class nnet:
                 #For each training case
                 for line in f:
                     trainingRow = map(float, line.split(" "))
-                    truth = int(trainingRow.pop(len(trainingRow)-1)) # Won't work with more than one output node
+                    truths = [int(trainingRow.pop(len(trainingRow)-1)) for node in self.layers[-1]]
 
                     #Initialize input Layer
                     for node in self.layers[0]:
@@ -70,7 +70,7 @@ class nnet:
 
                      #Initialize for output later
                     for node in self.layers[-1]:
-                        node.delta = self.dSig(node.inval)*(truth - node.activation)
+                        node.delta = self.dSig(node.inval)*(truths[node.nodeNum] - node.activation)
 
                     # Back propogation
                     for node in self.layers[1]:
@@ -96,8 +96,10 @@ class nnet:
                 fLine = (r.readline().strip()).split(" ")
                 for line in r:
                     trainingRow = map(float, line.split(" "))
-                    truth = int(trainingRow.pop(len(trainingRow)-1))
-                    truthVec.append(truth)
+                    truths = [int(trainingRow.pop(len(trainingRow)-1)) for node in self.layers[-1]]
+                    print(truths)
+                    # truth = int(trainingRow.pop(len(trainingRow)-1))
+                    truthVec.append(truths)
 
                     #Initialize input Layer
                     for node in self.layers[0]:
@@ -116,7 +118,7 @@ class nnet:
                         else:
                             result.append(0)
         print(sum(result))
-        print(sum(truthVec))
+        print(truthVec)
 
 
     def sig(self,val):
